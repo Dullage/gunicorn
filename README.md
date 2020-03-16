@@ -5,7 +5,7 @@ A Gunicorn Docker base image with Python.
 ## Tags
 
 * 3.8-alpine, latest
-* 3.7-alpine
+* 3.8
 
 ## Example Usage
 
@@ -40,8 +40,8 @@ docker run -p 80:80 my-app
 
 ## Environment Variables
 
-WORKERS = Number of Gunicorn workers, defaults to 3.
+WORKERS = Number of Gunicorn workers, defaults to 3
 
-HOST = Gunicorn host, defaults to 0.0.0.0.
+HOST = Gunicorn host, defaults to 0.0.0.0
 
-PORT = Gunicorn port, defaults to 80.
+PORT = Gunicorn port, defaults to 80
