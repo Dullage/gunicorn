@@ -2,7 +2,7 @@ pipeline {
     agent none
     environment {
         GIT_REPO_SLUG = "Dullage/gunicorn-python"
-        DOCKER_REPO_SLUG = "Dullage/gunicorn-python"
+        DOCKER_REPO_SLUG = "dullage/gunicorn-python"
         DOCKER_CREDENTIALS = credentials('docker')
         DOCKER_CLI_EXPERIMENTAL = "enabled"
     }
@@ -14,12 +14,14 @@ pipeline {
                     steps {
                         // 3.8
                         sh "docker build -t $DOCKER_REPO_SLUG:3.8-amd64 $WORKSPACE/3.8"
-                        sh "docker save -o 3.8-amd64.tar $DOCKER_REPO_SLUG:3.8-amd64"
+                        // sh "docker save -o 3.8-amd64.tar $DOCKER_REPO_SLUG:3.8-amd64"  // Un-comment if there is more than one matching agent
+
                         // 3.8-alpine
                         sh "docker build -t $DOCKER_REPO_SLUG:3.8-alpine-amd64 $WORKSPACE/3.8-alpine"
-                        sh "docker save -o 3.8-alpine-amd64.tar $DOCKER_REPO_SLUG:3.8-alpine-amd64"
+                        // sh "docker save -o 3.8-alpine-amd64.tar $DOCKER_REPO_SLUG:3.8-alpine-amd64"  // Un-comment if there is more than one matching agent
+
                         // Stash
-                        stash includes: "*.tar", name: "amd64"
+                        // stash includes: "*.tar", name: "amd64"  // Un-comment if there is more than one matching agent
                     }
                 }
                 stage("Build (arm32v7)") {
@@ -27,12 +29,14 @@ pipeline {
                     steps {
                         // 3.8
                         sh "docker build -t $DOCKER_REPO_SLUG:3.8-arm32v7 $WORKSPACE/3.8"
-                        sh "docker save -o 3.8-arm32v7.tar $DOCKER_REPO_SLUG:3.8-arm32v7"
+                        // sh "docker save -o 3.8-arm32v7.tar $DOCKER_REPO_SLUG:3.8-arm32v7"  // Un-comment if there is more than one matching agent
+
                         // 3.8-alpine
                         sh "docker build -t $DOCKER_REPO_SLUG:3.8-alpine-arm32v7 $WORKSPACE/3.8-alpine"
-                        sh "docker save -o 3.8-alpine-arm32v7.tar $DOCKER_REPO_SLUG:3.8-alpine-arm32v7"
+                        // sh "docker save -o 3.8-alpine-arm32v7.tar $DOCKER_REPO_SLUG:3.8-alpine-arm32v7"  // Un-comment if there is more than one matching agent
+
                         // Stash
-                        stash includes: "*.tar", name: "arm32v7"
+                        // stash includes: "*.tar", name: "arm32v7"  // Un-comment if there is more than one matching agent
                     }
                 }
             }
@@ -43,26 +47,30 @@ pipeline {
                 stage("Deploy (amd64)") {
                     agent { label "docker && amd64" }
                     steps {
-                        unstash "amd64"
+                        // unstash "amd64"  // Un-comment if there is more than one matching agent
                         sh "echo '$DOCKER_CREDENTIALS_PSW' | docker login -u '$DOCKER_CREDENTIALS_USR' --password-stdin"
+
                         // 3.8
-                        sh "docker load -i 3.8-amd64.tar"
+                        // sh "docker load -i 3.8-amd64.tar"  // Un-comment if there is more than one matching agent
                         sh "docker push $DOCKER_REPO_SLUG:3.8-amd64"
+
                         // 3.8-alpine
-                        sh "docker load -i 3.8-alpine-amd64.tar"
+                        // sh "docker load -i 3.8-alpine-amd64.tar"  // Un-comment if there is more than one matching agent
                         sh "docker push $DOCKER_REPO_SLUG:3.8-alpine-amd64"
                     }
                 }
                 stage("Deploy (arm32v7)") {
                     agent { label "docker && arm32v7" }
                     steps {
-                        unstash "arm32v7"
+                        // unstash "arm32v7"  // Un-comment if there is more than one matching agent
                         sh "echo '$DOCKER_CREDENTIALS_PSW' | docker login -u '$DOCKER_CREDENTIALS_USR' --password-stdin"
+
                         // 3.8
-                        sh "docker load -i 3.8-arm32v7.tar"
+                        // sh "docker load -i 3.8-arm32v7.tar"  // Un-comment if there is more than one matching agent
                         sh "docker push $DOCKER_REPO_SLUG:3.8-arm32v7"
+
                         // 3.8-alpine
-                        sh "docker load -i 3.8-alpine-arm32v7.tar"
+                        // sh "docker load -i 3.8-alpine-arm32v7.tar"  // Un-comment if there is more than one matching agent
                         sh "docker push $DOCKER_REPO_SLUG:3.8-alpine-arm32v7"
                     }
                 }
