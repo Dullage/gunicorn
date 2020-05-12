@@ -24,6 +24,7 @@ pipeline {
                 }
                 stage("Build (arm32v7)") {
                     agent { label "docker && arm32v7" }
+                    steps {
                         // 3.8
                         sh "docker build -t $DOCKER_REPO_SLUG:3.8-arm32v7 $WORKSPACE/3.8"
                         sh "docker save -o 3.8-arm32v7.tar $DOCKER_REPO_SLUG:3.8-arm32v7"
@@ -32,6 +33,7 @@ pipeline {
                         sh "docker save -o 3.8-alpine-arm32v7.tar $DOCKER_REPO_SLUG:3.8-alpine-arm32v7"
                         // Stash
                         stash includes: "*.tar", name: "arm32v7"
+                    }
                 }
             }
         }
