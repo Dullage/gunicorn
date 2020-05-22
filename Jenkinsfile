@@ -54,14 +54,14 @@ pipeline {
             steps {
                 sh 'echo $DOCKER_CREDENTIALS_PSW | docker login -u $DOCKER_CREDENTIALS_USR --password-stdin'
                 // 3.8
-                sh 'docker manifest create --amend $DOCKER_REPO_SLUG:3.8 $DOCKER_REPO_SLUG:3.8-amd64 $DOCKER_REPO_SLUG:3.8-arm32v7'
-                sh 'docker manifest push $DOCKER_REPO_SLUG:3.8'
+                sh 'docker manifest create $DOCKER_REPO_SLUG:3.8 $DOCKER_REPO_SLUG:3.8-amd64 $DOCKER_REPO_SLUG:3.8-arm32v7'
+                sh 'docker manifest push --purge $DOCKER_REPO_SLUG:3.8'
                 // 3.8-alpine
-                sh 'docker manifest create --amend $DOCKER_REPO_SLUG:3.8-alpine $DOCKER_REPO_SLUG:3.8-alpine-amd64 $DOCKER_REPO_SLUG:3.8-alpine-arm32v7'
-                sh 'docker manifest push $DOCKER_REPO_SLUG:3.8-alpine'
+                sh 'docker manifest create $DOCKER_REPO_SLUG:3.8-alpine $DOCKER_REPO_SLUG:3.8-alpine-amd64 $DOCKER_REPO_SLUG:3.8-alpine-arm32v7'
+                sh 'docker manifest push --purge $DOCKER_REPO_SLUG:3.8-alpine'
                 // latest
-                sh 'docker manifest create --amend $DOCKER_REPO_SLUG:latest $DOCKER_REPO_SLUG:3.8-alpine-amd64 $DOCKER_REPO_SLUG:3.8-alpine-arm32v7'
-                sh 'docker manifest push $DOCKER_REPO_SLUG:latest'
+                sh 'docker manifest create $DOCKER_REPO_SLUG:latest $DOCKER_REPO_SLUG:3.8-alpine-amd64 $DOCKER_REPO_SLUG:3.8-alpine-arm32v7'
+                sh 'docker manifest push --purge $DOCKER_REPO_SLUG:latest'
             }
         }
     }
