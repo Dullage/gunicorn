@@ -1,7 +1,12 @@
 pipeline {
     agent none
     environment {
-        DOCKER_REPO_SLUG = 'dullage/gunicorn-python'
+        DOCKER_REPO_SLUG = 'dullage/gunicorn'
+        GUNICORN_VERSION = '20.0'
+        PYTHON_VERSION = '3.8'
+        ALPINE_VERSION = '3.12'
+        AMD_TAG = 'amd64'
+        ARM_TAG = 'arm32v7'
     }
     stages {
         stage('Build') {
@@ -9,15 +14,15 @@ pipeline {
                 stage('Build (amd64)') {
                     agent { label 'docker && amd64' }
                     steps {
-                        sh 'docker build -t $DOCKER_REPO_SLUG:3.8-amd64 $WORKSPACE/3.8'
-                        sh 'docker build -t $DOCKER_REPO_SLUG:3.8-alpine-amd64 $WORKSPACE/3.8-alpine'
+                        sh 'docker build --build-arg BASE_IMAGE_TAG=${PYTHON_VERSION} --build-arg GUNICORN_VERSION=${GUNICORN_VERSION} -t $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-${AMD_TAG} $WORKSPACE'
+                        sh 'docker build --build-arg BASE_IMAGE_TAG=${PYTHON_VERSION}-alpine${ALPINE_VERSION} --build-arg GUNICORN_VERSION=${GUNICORN_VERSION} -t $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-alpine${ALPINE_VERSION}-${AMD_TAG} $WORKSPACE'
                     }
                 }
                 stage('Build (arm32v7)') {
                     agent { label 'docker && arm32v7' }
                     steps {
-                        sh 'docker build -t $DOCKER_REPO_SLUG:3.8-arm32v7 $WORKSPACE/3.8'
-                        sh 'docker build -t $DOCKER_REPO_SLUG:3.8-alpine-arm32v7 $WORKSPACE/3.8-alpine'
+                        sh 'docker build --build-arg BASE_IMAGE_TAG=${PYTHON_VERSION} --build-arg GUNICORN_VERSION=${GUNICORN_VERSION} -t $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-${ARM_TAG} $WORKSPACE'
+                        sh 'docker build --build-arg BASE_IMAGE_TAG=${PYTHON_VERSION}-alpine${ALPINE_VERSION} --build-arg GUNICORN_VERSION=${GUNICORN_VERSION} -t $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-alpine${ALPINE_VERSION}-${ARM_TAG} $WORKSPACE'
                     }
                 }
             }
@@ -30,16 +35,16 @@ pipeline {
                     agent { label 'docker && amd64' }
                     steps {
                         sh 'echo $DOCKER_CREDENTIALS_PSW | docker login -u $DOCKER_CREDENTIALS_USR --password-stdin'
-                        sh 'docker push $DOCKER_REPO_SLUG:3.8-amd64'
-                        sh 'docker push $DOCKER_REPO_SLUG:3.8-alpine-amd64'
+                        sh 'docker push $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-${AMD_TAG}'
+                        sh 'docker push $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-alpine${ALPINE_VERSION}-${AMD_TAG}'
                     }
                 }
                 stage('Deploy (arm32v7)') {
                     agent { label 'docker && arm32v7' }
                     steps {
                         sh 'echo $DOCKER_CREDENTIALS_PSW | docker login -u $DOCKER_CREDENTIALS_USR --password-stdin'
-                        sh 'docker push $DOCKER_REPO_SLUG:3.8-arm32v7'
-                        sh 'docker push $DOCKER_REPO_SLUG:3.8-alpine-arm32v7'
+                        sh 'docker push $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-${ARM_TAG}'
+                        sh 'docker push $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-alpine${ALPINE_VERSION}-${ARM_TAG}'
                     }
                 }
             }
@@ -53,14 +58,14 @@ pipeline {
             }
             steps {
                 sh 'echo $DOCKER_CREDENTIALS_PSW | docker login -u $DOCKER_CREDENTIALS_USR --password-stdin'
-                // 3.8
-                sh 'docker manifest create $DOCKER_REPO_SLUG:3.8 $DOCKER_REPO_SLUG:3.8-amd64 $DOCKER_REPO_SLUG:3.8-arm32v7'
-                sh 'docker manifest push --purge $DOCKER_REPO_SLUG:3.8'
-                // 3.8-alpine
-                sh 'docker manifest create $DOCKER_REPO_SLUG:3.8-alpine $DOCKER_REPO_SLUG:3.8-alpine-amd64 $DOCKER_REPO_SLUG:3.8-alpine-arm32v7'
-                sh 'docker manifest push --purge $DOCKER_REPO_SLUG:3.8-alpine'
-                // latest
-                sh 'docker manifest create $DOCKER_REPO_SLUG:latest $DOCKER_REPO_SLUG:3.8-alpine-amd64 $DOCKER_REPO_SLUG:3.8-alpine-arm32v7'
+                // Debian
+                sh 'docker manifest create $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION} $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-${AMD_TAG} $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-${ARM_TAG}'
+                sh 'docker manifest push --purge $DOCKER_REPO_SLUG:python$PYTHON_VERSION'
+                // Alpine
+                sh 'docker manifest create $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-alpine${ALPINE_VERSION} $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-alpine${ALPINE_VERSION}-${AMD_TAG} $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-alpine${ALPINE_VERSION}-${ARM_TAG}'
+                sh 'docker manifest push --purge $DOCKER_REPO_SLUG:python$PYTHON_VERSION-alpine$ALPINE_VERSION'
+                // Latest
+                sh 'docker manifest create $DOCKER_REPO_SLUG:latest $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-alpine${ALPINE_VERSION}-${AMD_TAG} $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-alpine${ALPINE_VERSION}-${ARM_TAG}'
                 sh 'docker manifest push --purge $DOCKER_REPO_SLUG:latest'
             }
         }
