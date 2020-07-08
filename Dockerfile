@@ -4,18 +4,18 @@ FROM python:${BASE_IMAGE_TAG}
 ENV USER=gunicorn
 ENV UID=1000
 ENV GID=1000
-ENV APP_DIR=\app
+ENV APP_DIR=/app
 
 RUN addgroup \
     --gid $GID \
-    "$USER" \
+    $USER \
 && adduser \
     --disabled-password \
     --gecos "" \
-    --home "$APP_DIR" \
-    --ingroup "$USER" \
+    --home $APP_DIR \
+    --ingroup $USER \
     --uid $UID \
-    "$USER"
+    $USER
 
 USER $UID
 
