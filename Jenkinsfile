@@ -60,10 +60,10 @@ pipeline {
                 sh 'echo $DOCKER_CREDENTIALS_PSW | docker login -u $DOCKER_CREDENTIALS_USR --password-stdin'
                 // Debian
                 sh 'docker manifest create $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION} $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-${AMD_TAG} $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-${ARM_TAG}'
-                sh 'docker manifest push --purge $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}
+                sh 'docker manifest push --purge $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}'
                 // Alpine
                 sh 'docker manifest create $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-alpine${ALPINE_VERSION} $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-alpine${ALPINE_VERSION}-${AMD_TAG} $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-alpine${ALPINE_VERSION}-${ARM_TAG}'
-                sh 'docker manifest push --purge $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-alpine${ALPINE_VERSION}
+                sh 'docker manifest push --purge $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-alpine${ALPINE_VERSION}'
                 // Latest
                 sh 'docker manifest create $DOCKER_REPO_SLUG:latest $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-alpine${ALPINE_VERSION}-${AMD_TAG} $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-alpine${ALPINE_VERSION}-${ARM_TAG}'
                 sh 'docker manifest push --purge $DOCKER_REPO_SLUG:latest'
