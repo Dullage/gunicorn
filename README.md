@@ -1,31 +1,18 @@
-# gunicorn-python
+# gunicorn
 
 A Gunicorn Docker base image with Python.
 
 ## Tags
 
-* 3.8-alpine, latest
-* 3.8
+* 20.0-python3.8-alpine3.12, latest
+* 20.0-python3.8
 
 ## Example Usage
 
-Note: This image expects a module called "main" (e.g. main.py) in the /app directory, this should expose a variable called "app".
-
-### No dependencies
-
-If your app has no dependencies then you can simply run:
-
-```bash
-docker run -v /path/to/your/app:/app -p 80:80 dullage/gunicorn-python
-```
-
-### Dependencies
-
-If you want to install dependencies then you can use this as a base image:
-
+Use this image as a base:
 
 ```dockerfile
-FROM dullage/gunicorn-python:latest
+FROM dullage/gunicorn:20.0-python3.8-alpine3.12
 
 COPY /path/to/your/app /app
 
@@ -35,13 +22,15 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 ```bash
 docker build -t my-app .
 
-docker run -p 80:80 my-app
+docker run -p 80:8080 my-app
 ```
 
-## Environment Variables
+## Entrypoint / Default Command
 
-WORKERS = Number of Gunicorn workers, defaults to 3
+The entrypoint is `gunicorn` and the default command is `-b 0.0.0.0:8080 -w 3 main:app` < Bind to all interfaces on port 8080 (inside the container), load a module called 'mail' with a variable called 'app'.
 
-HOST = Gunicorn host, defaults to 0.0.0.0
+The default command can be overridden as required. Example:
 
-PORT = Gunicorn port, defaults to 80
+```bash
+docker run -p 80:8080 my-app -b 0.0.0.0:8080 -w 1 myapp:app
+```
