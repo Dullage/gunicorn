@@ -1,34 +1,32 @@
 ARG BASE_IMAGE_TAG
 FROM python:${BASE_IMAGE_TAG}
 
-ARG GUNICORN_VERSION
-RUN pip install --no-cache-dir gunicorn==${GUNICORN_VERSION}
-
-EXPOSE 80
-
-WORKDIR /app
-
 ENV USER=gunicorn
 ENV UID=1000
 ENV GID=1000
+ENV APP_DIR=\app
 
 RUN addgroup \
     --gid $GID \
-	"$USER"
-
-RUN adduser \
+    "$USER" \
+&& adduser \
     --disabled-password \
     --gecos "" \
-    --home "$(pwd)" \
+    --home "$APP_DIR" \
     --ingroup "$USER" \
-    --no-create-home \
     --uid $UID \
     "$USER"
 
 USER $UID
 
-ENV GUNICORN_MODULE_NAME="main"
-ENV GUNICORN_VARIABLE_NAME="app"
-ENV GUNICORN_CMD_ARGS="-w 3 -b 0.0.0.0:8000"
+ENV PATH="${APP_DIR}/.local/bin:${PATH}"
 
-CMD ["gunicorn", "$GUNICORN_MODULE_NAME:$GUNICORN_VARIABLE_NAME"]
+WORKDIR $APP_DIR
+
+ARG GUNICORN_VERSION
+RUN pip install --no-cache-dir gunicorn==${GUNICORN_VERSION}
+
+EXPOSE 8080
+
+ENTRYPOINT ["gunicorn"]
+CMD ["-b 0.0.0.0:8080", "-w 3", "main:app"]
