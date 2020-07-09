@@ -3,6 +3,7 @@ pipeline {
     environment {
         DOCKER_REPO_SLUG = 'dullage/gunicorn'
         GUNICORN_VERSION = '20.0'
+        GUNICORN_STOP_VERSION = '20.1'
         PYTHON_VERSION = '3.8'
         ALPINE_VERSION = '3.12'
         AMD_TAG = 'amd64'
@@ -14,15 +15,15 @@ pipeline {
                 stage('Build (amd64)') {
                     agent { label 'docker && amd64' }
                     steps {
-                        sh 'docker build --build-arg BASE_IMAGE_TAG=${PYTHON_VERSION} --build-arg GUNICORN_VERSION=${GUNICORN_VERSION} -t $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-${AMD_TAG} $WORKSPACE'
-                        sh 'docker build --build-arg BASE_IMAGE_TAG=${PYTHON_VERSION}-alpine${ALPINE_VERSION} --build-arg GUNICORN_VERSION=${GUNICORN_VERSION} -t $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-alpine${ALPINE_VERSION}-${AMD_TAG} $WORKSPACE'
+                        sh 'docker build --build-arg BASE_IMAGE_TAG=${PYTHON_VERSION} --build-arg GUNICORN_VERSION=${GUNICORN_VERSION} --build-arg GUNICORN_STOP_VERSION=${GUNICORN_STOP_VERSION} -t $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-${AMD_TAG} $WORKSPACE'
+                        sh 'docker build --build-arg BASE_IMAGE_TAG=${PYTHON_VERSION}-alpine${ALPINE_VERSION} --build-arg GUNICORN_VERSION=${GUNICORN_VERSION} --build-arg GUNICORN_STOP_VERSION=${GUNICORN_STOP_VERSION} -t $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-alpine${ALPINE_VERSION}-${AMD_TAG} $WORKSPACE'
                     }
                 }
                 stage('Build (arm32v7)') {
                     agent { label 'docker && arm32v7' }
                     steps {
-                        sh 'docker build --build-arg BASE_IMAGE_TAG=${PYTHON_VERSION} --build-arg GUNICORN_VERSION=${GUNICORN_VERSION} -t $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-${ARM_TAG} $WORKSPACE'
-                        sh 'docker build --build-arg BASE_IMAGE_TAG=${PYTHON_VERSION}-alpine${ALPINE_VERSION} --build-arg GUNICORN_VERSION=${GUNICORN_VERSION} -t $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-alpine${ALPINE_VERSION}-${ARM_TAG} $WORKSPACE'
+                        sh 'docker build --build-arg BASE_IMAGE_TAG=${PYTHON_VERSION} --build-arg GUNICORN_VERSION=${GUNICORN_VERSION} --build-arg GUNICORN_STOP_VERSION=${GUNICORN_STOP_VERSION} -t $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-${ARM_TAG} $WORKSPACE'
+                        sh 'docker build --build-arg BASE_IMAGE_TAG=${PYTHON_VERSION}-alpine${ALPINE_VERSION} --build-arg GUNICORN_VERSION=${GUNICORN_VERSION} --build-arg GUNICORN_STOP_VERSION=${GUNICORN_STOP_VERSION} -t $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-alpine${ALPINE_VERSION}-${ARM_TAG} $WORKSPACE'
                     }
                 }
             }

@@ -24,7 +24,8 @@ ENV PATH="${APP_DIR}/.local/bin:${PATH}"
 WORKDIR $APP_DIR
 
 ARG GUNICORN_VERSION
-RUN pip install --no-cache-dir gunicorn==${GUNICORN_VERSION}
+ARG GUNICORN_STOP_VERSION
+RUN pip install --no-cache-dir gunicorn>=${GUNICORN_VERSION}<${GUNICORN_STOP_VERSION}
 
 EXPOSE 8080
 
