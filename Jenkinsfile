@@ -1,30 +1,19 @@
 pipeline {
     agent none
-    environment {
-        DOCKER_REPO_SLUG = 'dullage/gunicorn'
-        GUNICORN_VERSION = '20.0'
-        GUNICORN_STOP_VERSION = '20.1'
-        PYTHON_VERSION = '3.8'
-        ALPINE_VERSION = '3.12'
-        AMD_TAG = 'amd64'
-        ARM_TAG = 'arm32v7'
-    }
     stages {
         stage('Build') {
             parallel {
                 stage('Build (amd64)') {
                     agent { label 'docker && amd64' }
-                    steps {
-                        sh 'docker build --build-arg BASE_IMAGE_TAG=${PYTHON_VERSION} --build-arg GUNICORN_VERSION=${GUNICORN_VERSION} --build-arg GUNICORN_STOP_VERSION=${GUNICORN_STOP_VERSION} -t $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-${AMD_TAG} $WORKSPACE'
-                        sh 'docker build --build-arg BASE_IMAGE_TAG=${PYTHON_VERSION}-alpine${ALPINE_VERSION} --build-arg GUNICORN_VERSION=${GUNICORN_VERSION} --build-arg GUNICORN_STOP_VERSION=${GUNICORN_STOP_VERSION} -t $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-alpine${ALPINE_VERSION}-${AMD_TAG} $WORKSPACE'
-                    }
+                    steps { sh 'python3 ./.jenkins/jenkins.py build amd64' }
                 }
                 stage('Build (arm32v7)') {
                     agent { label 'docker && arm32v7' }
-                    steps {
-                        sh 'docker build --build-arg BASE_IMAGE_TAG=${PYTHON_VERSION} --build-arg GUNICORN_VERSION=${GUNICORN_VERSION} --build-arg GUNICORN_STOP_VERSION=${GUNICORN_STOP_VERSION} -t $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-${ARM_TAG} $WORKSPACE'
-                        sh 'docker build --build-arg BASE_IMAGE_TAG=${PYTHON_VERSION}-alpine${ALPINE_VERSION} --build-arg GUNICORN_VERSION=${GUNICORN_VERSION} --build-arg GUNICORN_STOP_VERSION=${GUNICORN_STOP_VERSION} -t $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-alpine${ALPINE_VERSION}-${ARM_TAG} $WORKSPACE'
-                    }
+                    steps { sh 'python3 ./.jenkins/jenkins.py build arm32v7' }
+                }
+                stage('Build (arm64v8)') {
+                    agent { label 'docker && arm64v8' }
+                    steps { sh 'python3 ./.jenkins/jenkins.py build arm64v8' }
                 }
             }
         }
@@ -32,21 +21,17 @@ pipeline {
             when { branch 'master' }
             environment { DOCKER_CREDENTIALS = credentials('docker') }
             parallel {
-                stage('Deploy (amd64)') {
+                stage('Build (amd64)') {
                     agent { label 'docker && amd64' }
-                    steps {
-                        sh 'echo $DOCKER_CREDENTIALS_PSW | docker login -u $DOCKER_CREDENTIALS_USR --password-stdin'
-                        sh 'docker push $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-${AMD_TAG}'
-                        sh 'docker push $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-alpine${ALPINE_VERSION}-${AMD_TAG}'
-                    }
+                    steps { sh 'python3 ./.jenkins/jenkins.py deploy amd64' }
                 }
-                stage('Deploy (arm32v7)') {
+                stage('Build (arm32v7)') {
                     agent { label 'docker && arm32v7' }
-                    steps {
-                        sh 'echo $DOCKER_CREDENTIALS_PSW | docker login -u $DOCKER_CREDENTIALS_USR --password-stdin'
-                        sh 'docker push $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-${ARM_TAG}'
-                        sh 'docker push $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-alpine${ALPINE_VERSION}-${ARM_TAG}'
-                    }
+                    steps { sh 'python3 ./.jenkins/jenkins.py deploy arm32v7' }
+                }
+                stage('Build (arm64v8)') {
+                    agent { label 'docker && arm64v8' }
+                    steps { sh 'python3 ./.jenkins/jenkins.py deploy arm64v8' }
                 }
             }
         }
@@ -57,18 +42,7 @@ pipeline {
                 DOCKER_CREDENTIALS = credentials('docker')
                 DOCKER_CLI_EXPERIMENTAL = 'enabled'
             }
-            steps {
-                sh 'echo $DOCKER_CREDENTIALS_PSW | docker login -u $DOCKER_CREDENTIALS_USR --password-stdin'
-                // Debian
-                sh 'docker manifest create $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION} $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-${AMD_TAG} $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-${ARM_TAG}'
-                sh 'docker manifest push --purge $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}'
-                // Alpine
-                sh 'docker manifest create $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-alpine${ALPINE_VERSION} $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-alpine${ALPINE_VERSION}-${AMD_TAG} $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-alpine${ALPINE_VERSION}-${ARM_TAG}'
-                sh 'docker manifest push --purge $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-alpine${ALPINE_VERSION}'
-                // Latest
-                sh 'docker manifest create $DOCKER_REPO_SLUG:latest $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-alpine${ALPINE_VERSION}-${AMD_TAG} $DOCKER_REPO_SLUG:${GUNICORN_VERSION}-python${PYTHON_VERSION}-alpine${ALPINE_VERSION}-${ARM_TAG}'
-                sh 'docker manifest push --purge $DOCKER_REPO_SLUG:latest'
-            }
+            steps { sh 'python3 ./.jenkins/jenkins.py manifest amd64 arm32v7 arm64v8' }
         }
     }
 }
